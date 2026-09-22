@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>حركات اليد</title>
+
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 25px;
+        }
+
+        #camera {
+            width: 90%;
+            max-width: 700px;
+            border-radius: 20px;
+            margin-top: 20px;
+            transform: scaleX(-1);
+        }
+
+        #result {
+            width: 80%;
+            max-width: 400px;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 20px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        #gesture {
+            font-size: 28px;
+            margin: 15px;
+        }
+
+        button {
+            background: white;
+            color: #111;
+            border: none;
+            border-radius: 15px;
+            padding: 15px 25px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🖐🏼 حركات اليد</h1>
+
+    <button onclick="startCamera()">
+        تشغيل الكاميرا 📷
+    </button>
+
+    <br>
+
+    <video id="camera" autoplay playsinline></video>
+
+    <div id="gesture">
+        اضغطي تشغيل ثم سوي حركة بيدك 👋🏼
+    </div>
+
+    <!-- الصورة التي ستتغير -->
+    <img id="result" src="open.jpg" alt="الصورة">
+
+    <script>
+
+        const video = document.getElementById("camera");
+        const resultImage = document.getElementById("result");
+        const gestureText = document.getElementById("gesture");
+
+        // =====================================
+        // الصور
+        // =====================================
+
+        const images = {
+            OPEN: "open.jpg",
+            FIST: "fist.jpg",
+            PEACE: "peace.jpg"
+        };
+
+
+        // =====================================
+        // MediaPipe Hands
+        // =====================================
+
+        const hands = new Hands({
+            locateFile: function(file) {
+                return "https://cdn.jsdelivr.net/npm/@mediapipe/hands/" + file;
+            }
+        });
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+        });
+
+
+        hands.onResults(function(results) {
+
+            if (
+                !results.multiHandLandmarks ||
+                results.multiHandLandmarks.length === 0
+            ) {
+                gestureText.innerText = "ما أشوف يد 👀";
+                return;
+            }
+
+            const hand =
+                results.multiHandLandmarks[0];
+
+            const gesture =
+                recognizeGesture(hand);
+
+
+            // =================================
+            // 🖐🏼 كف مفتوح
+            // =================================
+
+            if (gesture === "OPEN") {
+
+                gestureText.innerText =
+                    "🖐🏼 كف مفتوح";
+
+                resultImage.src =
+                    images.OPEN;
+            }
+
+
+            // =================================
+            // ✊🏼 قبضة
+            // =================================
+
+            else if (gesture === "FIST") {
+
+                gestureText.innerText =
+                    "✊🏼 قبضة";
+
+                resultImage.src =
+                    images.FIST;
+            }
+
+
+            // =================================
+            // ✌🏼 سلام
+            // =================================
+
+            else if (gesture === "PEACE") {
+
+                gestureText.innerText =
+                    "✌🏼 سلام";
+
+                resultImage.src =
+                    images.PEACE;
+            }
+
+
+            else {
+
+                gestureText.innerText =
+                    "حركة غير معروفة 🤔";
+            }
+
+        });
+
+
+        // =====================================
+        // تشغيل الكاميرا
+        // =====================================
+
+        async function startCamera() {
+
+            try {
+
+                const stream =
+                    await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: "user"
+                        },
+                        audio: false
+                    });
+
+                video.srcObject = stream;
+
+
+                const camera = new Camera(video, {
+
+                    onFrame: async function() {
+
+                        await hands.send({
+                            image: video
+                        });
+
+                    },
+
+                    width: 640,
+                    height: 480
+
+                });
+
+                camera.start();
+
+
+                gestureText.innerText =
+                    "أظهري يدك أمام الكاميرا 👋🏼";
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                gestureText.innerText =
+                    "لم نستطع تشغيل الكاميرا ❌";
+
+                alert(
+                    "اسمحي للمتصفح باستخدام الكاميرا ثم حاولي مرة أخرى."
+                );
+            }
+        }
+
+
+        // =====================================
+        // معرفة حركة الأصابع
+        // =====================================
+
+        function recognizeGesture(lm) {
+
+            const index =
+                isFingerUp(lm[8], lm[6]);
+
+            const middle =
+                isFingerUp(lm[12], lm[10]);
+
+            const ring =
+                isFingerUp(lm[16], lm[14]);
+
+            const pinky =
+                isFingerUp(lm[20], lm[18]);
+
+
+            // 🖐🏼
+            if (
+                index &&
+                middle &&
+                ring &&
+                pinky
+            ) {
+
+                return "OPEN";
+            }
+
+
+            // ✊🏼
+            if (
+                !index &&
+                !middle &&
+                !ring &&
+                !pinky
+            ) {
+
+                return "FIST";
+            }
+
+
+            // ✌🏼
+            if (
+                index &&
+                middle &&
+                !ring &&
+                !pinky
+            ) {
+
+                return "PEACE";
+            }
+
+
+            return null;
+        }
+
+
+        // =====================================
+        // هل الإصبع مرفوع؟
+        // =====================================
+
+        function isFingerUp(tip, pip) {
+
+            return tip.y < pip.y;
+        }
+
+    </script>
+
+</body>
+
+</html>
