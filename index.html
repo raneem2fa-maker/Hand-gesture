@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>حركات اليد 🇸🇦</title>
+    <title>🇸🇦</title>
 
+    <!-- MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
@@ -46,11 +47,6 @@
             display: block;
         }
 
-        #gesture {
-            font-size: 28px;
-            margin: 15px;
-        }
-
         button {
             background: white;
             color: #111;
@@ -58,13 +54,18 @@
             border-radius: 15px;
             padding: 15px 25px;
             font-size: 20px;
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
 
 <body>
 
-    <h1>🇸🇦 حركات اليد</h1>
+    <h1>🇸🇦</h1>
 
     <button onclick="startCamera()">
         تشغيل الكاميرا 📷
@@ -74,10 +75,7 @@
 
     <video id="camera" autoplay playsinline></video>
 
-    <div id="gesture">
-        اضغطي تشغيل ثم سوي حركة بيدك 👋🏼
-    </div>
-
+    <!-- الصورة -->
     <img
         id="result"
         src="https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg"
@@ -88,7 +86,6 @@
 
         const video = document.getElementById("camera");
         const resultImage = document.getElementById("result");
-        const gestureText = document.getElementById("gesture");
 
 
         // =====================================
@@ -165,10 +162,8 @@
                 results.multiHandLandmarks.length === 0
             ) {
 
-                gestureText.innerText =
-                    "ما أشوف يد 👀";
-
                 return;
+
             }
 
 
@@ -182,81 +177,65 @@
 
             if (gesture === "OPEN") {
 
-                show("🖐🏼 كف مفتوح", images.OPEN);
+                resultImage.src = images.OPEN;
 
             }
 
             else if (gesture === "FIST") {
 
-                show("✊🏼 قبضة", images.FIST);
+                resultImage.src = images.FIST;
 
             }
 
             else if (gesture === "PEACE") {
 
-                show("✌🏼 سلام", images.PEACE);
+                resultImage.src = images.PEACE;
 
             }
 
             else if (gesture === "THUMB") {
 
-                show("👍🏼 إبهام", images.THUMB);
+                resultImage.src = images.THUMB;
 
             }
 
             else if (gesture === "HEART") {
 
-                show("🫰🏻 قلب", images.HEART);
+                resultImage.src = images.HEART;
 
             }
 
             else if (gesture === "LEFT") {
 
-                show("🫲🏻 يد", images.LEFT);
+                resultImage.src = images.LEFT;
 
             }
 
             else if (gesture === "LOVE") {
 
-                show("🤟🏼 أحبك", images.LOVE);
+                resultImage.src = images.LOVE;
 
             }
 
             else if (gesture === "ROCK") {
 
-                show("🤘🏼 روك", images.ROCK);
+                resultImage.src = images.ROCK;
 
             }
 
             else if (gesture === "CALL") {
 
-                show("🤙🏼 اتصال", images.CALL);
+                resultImage.src = images.CALL;
 
             }
 
             else if (gesture === "ONE") {
 
-                show("☝🏻 واحد", images.ONE);
-
-            }
-
-            else {
-
-                gestureText.innerText =
-                    "حركة غير معروفة 🤔";
+                resultImage.src = images.ONE;
 
             }
 
         });
-
-
-        function show(text, image) {
-
-            gestureText.innerText = text;
-
-            resultImage.src = image;
-
-        }
 
 
         // =====================================
@@ -301,18 +280,15 @@
 
                 camera.start();
 
-
-                gestureText.innerText =
-                    "أظهري يدك أمام الكاميرا 👋🏼";
-
             }
 
             catch (error) {
 
                 console.error(error);
 
-                gestureText.innerText =
-                    "لم نستطع تشغيل الكاميرا ❌";
+                alert(
+                    "اسمحي للمتصفح باستخدام الكاميرا ثم حاولي مرة أخرى."
+                );
 
             }
 
@@ -478,6 +454,10 @@
 
         }
 
+
+        // =====================================
+        // هل الإصبع مرفوع؟
+        // =====================================
 
         function isFingerUp(tip, pip) {
 
