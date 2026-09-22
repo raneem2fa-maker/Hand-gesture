@@ -10,8 +10,10 @@
     <!-- MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
@@ -29,24 +31,6 @@
             margin-top: 25px;
         }
 
-        #camera {
-            width: 90%;
-            max-width: 700px;
-            border-radius: 20px;
-            margin-top: 20px;
-            transform: scaleX(-1);
-        }
-
-        #result {
-            width: 80%;
-            max-width: 400px;
-            max-height: 400px;
-            object-fit: contain;
-            border-radius: 20px;
-            margin: 20px auto;
-            display: block;
-        }
-
         button {
             background: white;
             color: #111;
@@ -55,12 +39,53 @@
             padding: 15px 25px;
             font-size: 20px;
             cursor: pointer;
+            margin-bottom: 20px;
         }
 
         button:active {
             transform: scale(0.95);
         }
+
+        /* مكان الكاميرا */
+        #cameraBox {
+            position: relative;
+            width: 90%;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        /* الكاميرا */
+        #camera {
+            display: block;
+            width: 100%;
+            border-radius: 20px;
+            transform: scaleX(-1);
+        }
+
+        /* خطوط اليد */
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transform: scaleX(-1);
+        }
+
+        /* الصورة */
+        #result {
+            display: block;
+            width: 80%;
+            max-width: 400px;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 20px;
+            margin: 25px auto;
+        }
+
     </style>
+
 </head>
 
 <body>
@@ -71,21 +96,39 @@
         تشغيل الكاميرا 📷
     </button>
 
-    <br>
+    <div id="cameraBox">
 
-    <video id="camera" autoplay playsinline></video>
+        <video
+            id="camera"
+            autoplay
+            playsinline>
+        </video>
 
-    <!-- الصورة -->
+        <canvas id="canvas"></canvas>
+
+    </div>
+
+    <!-- الصورة ظاهرة من البداية -->
     <img
         id="result"
         src="https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg"
         alt="الصورة"
     >
 
+
     <script>
 
-        const video = document.getElementById("camera");
-        const resultImage = document.getElementById("result");
+        const video =
+            document.getElementById("camera");
+
+        const canvas =
+            document.getElementById("canvas");
+
+        const ctx =
+            canvas.getContext("2d");
+
+        const resultImage =
+            document.getElementById("result");
 
 
         // =====================================
@@ -128,7 +171,7 @@
 
 
         // =====================================
-        // MediaPipe
+        // MediaPipe Hands
         // =====================================
 
         const hands = new Hands({
@@ -155,85 +198,144 @@
         });
 
 
+        // =====================================
+        // نتائج الكاميرا
+        // =====================================
+
         hands.onResults(function(results) {
 
+            // ضبط حجم الرسم
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+
+            // تنظيف الخطوط القديمة
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+            // =================================
+            // إذا فيه يد
+            // =================================
+
             if (
-                !results.multiHandLandmarks ||
-                results.multiHandLandmarks.length === 0
+                results.multiHandLandmarks &&
+                results.multiHandLandmarks.length > 0
             ) {
 
-                return;
+                const landmarks =
+                    results.multiHandLandmarks[0];
+
+
+                // رسم خطوط اليد
+                drawConnectors(
+                    ctx,
+                    landmarks,
+                    HAND_CONNECTIONS,
+                    {
+                        color: "#00ff88",
+                        lineWidth: 5
+                    }
+                );
+
+
+                // رسم نقاط المفاصل
+                drawLandmarks(
+                    ctx,
+                    landmarks,
+                    {
+                        color: "#ffffff",
+                        fillColor: "#00ff88",
+                        lineWidth: 2,
+                        radius: 5
+                    }
+                );
+
+
+                // التعرف على الحركة
+                const gesture =
+                    recognizeGesture(landmarks);
+
+
+                // تغيير الصورة إذا عرف الحركة
+                if (gesture === "OPEN") {
+
+                    resultImage.src =
+                        images.OPEN;
+
+                }
+
+                else if (gesture === "FIST") {
+
+                    resultImage.src =
+                        images.FIST;
+
+                }
+
+                else if (gesture === "PEACE") {
+
+                    resultImage.src =
+                        images.PEACE;
+
+                }
+
+                else if (gesture === "THUMB") {
+
+                    resultImage.src =
+                        images.THUMB;
+
+                }
+
+                else if (gesture === "HEART") {
+
+                    resultImage.src =
+                        images.HEART;
+
+                }
+
+                else if (gesture === "LEFT") {
+
+                    resultImage.src =
+                        images.LEFT;
+
+                }
+
+                else if (gesture === "LOVE") {
+
+                    resultImage.src =
+                        images.LOVE;
+
+                }
+
+                else if (gesture === "ROCK") {
+
+                    resultImage.src =
+                        images.ROCK;
+
+                }
+
+                else if (gesture === "CALL") {
+
+                    resultImage.src =
+                        images.CALL;
+
+                }
+
+                else if (gesture === "ONE") {
+
+                    resultImage.src =
+                        images.ONE;
+
+                }
 
             }
 
-
-            const hand =
-                results.multiHandLandmarks[0];
-
-
-            const gesture =
-                recognizeGesture(hand);
-
-
-            if (gesture === "OPEN") {
-
-                resultImage.src = images.OPEN;
-
-            }
-
-            else if (gesture === "FIST") {
-
-                resultImage.src = images.FIST;
-
-            }
-
-            else if (gesture === "PEACE") {
-
-                resultImage.src = images.PEACE;
-
-            }
-
-            else if (gesture === "THUMB") {
-
-                resultImage.src = images.THUMB;
-
-            }
-
-            else if (gesture === "HEART") {
-
-                resultImage.src = images.HEART;
-
-            }
-
-            else if (gesture === "LEFT") {
-
-                resultImage.src = images.LEFT;
-
-            }
-
-            else if (gesture === "LOVE") {
-
-                resultImage.src = images.LOVE;
-
-            }
-
-            else if (gesture === "ROCK") {
-
-                resultImage.src = images.ROCK;
-
-            }
-
-            else if (gesture === "CALL") {
-
-                resultImage.src = images.CALL;
-
-            }
-
-            else if (gesture === "ONE") {
-
-                resultImage.src = images.ONE;
-
-            }
+            // إذا ما فيه يد:
+            // نخلي الصورة كما هي ولا نخفيها
 
         });
 
@@ -261,21 +363,22 @@
                 video.srcObject = stream;
 
 
-                const camera = new Camera(video, {
+                const camera =
+                    new Camera(video, {
 
-                    onFrame: async function() {
+                        onFrame: async function() {
 
-                        await hands.send({
-                            image: video
-                        });
+                            await hands.send({
+                                image: video
+                            });
 
-                    },
+                        },
 
-                    width: 640,
+                        width: 640,
 
-                    height: 480
+                        height: 480
 
-                });
+                    });
 
 
                 camera.start();
@@ -296,7 +399,7 @@
 
 
         // =====================================
-        // التعرف على الحركة
+        // التعرف على الحركات
         // =====================================
 
         function recognizeGesture(lm) {
@@ -304,20 +407,24 @@
             const thumb =
                 lm[4].x < lm[3].x;
 
+
             const index =
                 isFingerUp(lm[8], lm[6]);
+
 
             const middle =
                 isFingerUp(lm[12], lm[10]);
 
+
             const ring =
                 isFingerUp(lm[16], lm[14]);
+
 
             const pinky =
                 isFingerUp(lm[20], lm[18]);
 
 
-            // 🖐🏼
+            // 🖐🏼 فتح اليد
             if (
                 index &&
                 middle &&
@@ -330,7 +437,7 @@
             }
 
 
-            // ✊🏼
+            // ✊🏼 قبضة
             if (
                 !index &&
                 !middle &&
@@ -343,7 +450,7 @@
             }
 
 
-            // ✌🏼
+            // ✌🏼 سلام
             if (
                 index &&
                 middle &&
@@ -356,7 +463,7 @@
             }
 
 
-            // ☝🏻
+            // ☝🏻 إصبع واحد
             if (
                 index &&
                 !middle &&
@@ -369,7 +476,7 @@
             }
 
 
-            // 👍🏼
+            // 👍🏼 إبهام
             if (
                 thumb &&
                 !index &&
@@ -383,7 +490,7 @@
             }
 
 
-            // 🫰🏻
+            // 🫰🏻 قلب بالأصابع
             if (
                 index &&
                 middle &&
@@ -396,7 +503,7 @@
             }
 
 
-            // 🤟🏼
+            // 🤟🏼 أحبك
             if (
                 thumb &&
                 index &&
@@ -410,7 +517,7 @@
             }
 
 
-            // 🤘🏼
+            // 🤘🏼 روك
             if (
                 index &&
                 !middle &&
@@ -423,7 +530,7 @@
             }
 
 
-            // 🤙🏼
+            // 🤙🏼 اتصل
             if (
                 thumb &&
                 !index &&
@@ -437,7 +544,7 @@
             }
 
 
-            // 🫲🏻
+            // 🫲🏻 اليد اليسرى
             if (
                 !index &&
                 middle &&
@@ -456,7 +563,7 @@
 
 
         // =====================================
-        // هل الإصبع مرفوع؟
+        // معرفة إذا الإصبع مرفوع
         // =====================================
 
         function isFingerUp(tip, pip) {
