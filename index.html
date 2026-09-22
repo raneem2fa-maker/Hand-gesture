@@ -7,7 +7,6 @@
 
     <title>🇸🇦</title>
 
-    <!-- MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -42,19 +41,15 @@
             margin-bottom: 20px;
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
-
-        /* مكان الكاميرا */
         #cameraBox {
             position: relative;
             width: 90%;
             max-width: 700px;
             margin: auto;
+            overflow: hidden;
+            border-radius: 20px;
         }
 
-        /* الكاميرا */
         #camera {
             display: block;
             width: 100%;
@@ -62,7 +57,6 @@
             transform: scaleX(-1);
         }
 
-        /* خطوط اليد */
         #canvas {
             position: absolute;
             top: 0;
@@ -73,15 +67,33 @@
             transform: scaleX(-1);
         }
 
-        /* الصورة */
+        /* الصورة داخل زاوية الكاميرا */
         #result {
-            display: block;
-            width: 80%;
-            max-width: 400px;
-            max-height: 400px;
+            position: absolute;
+
+            top: 15px;
+            right: 15px;
+
+            width: 120px;
+            height: 120px;
+
             object-fit: contain;
-            border-radius: 20px;
-            margin: 25px auto;
+
+            background: rgba(255, 255, 255, 0.92);
+
+            padding: 5px;
+
+            border-radius: 15px;
+
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+
+            z-index: 5;
+
+            transition: opacity 0.15s ease;
+        }
+
+        #result.hidden {
+            display: none;
         }
 
     </style>
@@ -106,14 +118,14 @@
 
         <canvas id="canvas"></canvas>
 
-    </div>
+        <!-- الصورة تظهر بالبداية -->
+        <img
+            id="result"
+            src="https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg"
+            alt="الصورة"
+        >
 
-    <!-- الصورة ظاهرة من البداية -->
-    <img
-        id="result"
-        src="https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg"
-        alt="الصورة"
-    >
+    </div>
 
 
     <script>
@@ -171,7 +183,18 @@
 
 
         // =====================================
-        // MediaPipe Hands
+        // تثبيت الحركة
+        // =====================================
+
+        let lastGesture = null;
+
+        let gestureFrames = 0;
+
+        const REQUIRED_FRAMES = 5;
+
+
+        // =====================================
+        // MediaPipe
         // =====================================
 
         const hands = new Hands({
@@ -191,25 +214,26 @@
 
             modelComplexity: 1,
 
-            minDetectionConfidence: 0.7,
+            minDetectionConfidence: 0.75,
 
-            minTrackingConfidence: 0.7
+            minTrackingConfidence: 0.75
 
         });
 
 
         // =====================================
-        // نتائج الكاميرا
+        // النتائج
         // =====================================
 
         hands.onResults(function(results) {
 
-            // ضبط حجم الرسم
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvas.width =
+                video.videoWidth;
+
+            canvas.height =
+                video.videoHeight;
 
 
-            // تنظيف الخطوط القديمة
             ctx.clearRect(
                 0,
                 0,
@@ -219,125 +243,127 @@
 
 
             // =================================
-            // إذا فيه يد
+            // ما فيه يد
             // =================================
 
             if (
-                results.multiHandLandmarks &&
-                results.multiHandLandmarks.length > 0
+                !results.multiHandLandmarks ||
+                results.multiHandLandmarks.length === 0
             ) {
 
-                const landmarks =
-                    results.multiHandLandmarks[0];
+                hideImage();
+
+                lastGesture = null;
+
+                gestureFrames = 0;
+
+                return;
+            }
 
 
-                // رسم خطوط اليد
-                drawConnectors(
-                    ctx,
-                    landmarks,
-                    HAND_CONNECTIONS,
-                    {
-                        color: "#00ff88",
-                        lineWidth: 5
-                    }
-                );
+            const landmarks =
+                results.multiHandLandmarks[0];
 
 
-                // رسم نقاط المفاصل
-                drawLandmarks(
-                    ctx,
-                    landmarks,
-                    {
-                        color: "#ffffff",
-                        fillColor: "#00ff88",
-                        lineWidth: 2,
-                        radius: 5
-                    }
-                );
+            // =================================
+            // رسم اليد
+            // =================================
 
-
-                // التعرف على الحركة
-                const gesture =
-                    recognizeGesture(landmarks);
-
-
-                // تغيير الصورة إذا عرف الحركة
-                if (gesture === "OPEN") {
-
-                    resultImage.src =
-                        images.OPEN;
-
+            drawConnectors(
+                ctx,
+                landmarks,
+                HAND_CONNECTIONS,
+                {
+                    color: "#00ff88",
+                    lineWidth: 5
                 }
+            );
 
-                else if (gesture === "FIST") {
 
-                    resultImage.src =
-                        images.FIST;
-
+            drawLandmarks(
+                ctx,
+                landmarks,
+                {
+                    color: "#ffffff",
+                    fillColor: "#00ff88",
+                    lineWidth: 2,
+                    radius: 5
                 }
+            );
 
-                else if (gesture === "PEACE") {
 
-                    resultImage.src =
-                        images.PEACE;
+            // =================================
+            // التعرف
+            // =================================
 
-                }
+            const gesture =
+                recognizeGesture(landmarks);
 
-                else if (gesture === "THUMB") {
 
-                    resultImage.src =
-                        images.THUMB;
+            // إذا الحركة غير واضحة
+            if (!gesture) {
 
-                }
+                lastGesture = null;
 
-                else if (gesture === "HEART") {
+                gestureFrames = 0;
 
-                    resultImage.src =
-                        images.HEART;
+                hideImage();
 
-                }
+                return;
+            }
 
-                else if (gesture === "LEFT") {
 
-                    resultImage.src =
-                        images.LEFT;
+            // =================================
+            // تثبيت الحركة
+            // =================================
 
-                }
+            if (gesture === lastGesture) {
 
-                else if (gesture === "LOVE") {
-
-                    resultImage.src =
-                        images.LOVE;
-
-                }
-
-                else if (gesture === "ROCK") {
-
-                    resultImage.src =
-                        images.ROCK;
-
-                }
-
-                else if (gesture === "CALL") {
-
-                    resultImage.src =
-                        images.CALL;
-
-                }
-
-                else if (gesture === "ONE") {
-
-                    resultImage.src =
-                        images.ONE;
-
-                }
+                gestureFrames++;
 
             }
 
-            // إذا ما فيه يد:
-            // نخلي الصورة كما هي ولا نخفيها
+            else {
+
+                lastGesture = gesture;
+
+                gestureFrames = 1;
+
+            }
+
+
+            // لا نغير الصورة إلا بعد ثبات الحركة
+            if (gestureFrames >= REQUIRED_FRAMES) {
+
+                showImage(images[gesture]);
+
+            }
 
         });
+
+
+        // =====================================
+        // إظهار الصورة
+        // =====================================
+
+        function showImage(url) {
+
+            resultImage.src = url;
+
+            resultImage.classList.remove("hidden");
+
+        }
+
+
+        // =====================================
+        // إخفاء الصورة
+        // =====================================
+
+        function hideImage() {
+
+            resultImage.classList.add("hidden");
+
+        }
 
 
         // =====================================
@@ -399,37 +425,92 @@
 
 
         // =====================================
-        // التعرف على الحركات
+        // التعرف على الحركة
         // =====================================
 
         function recognizeGesture(lm) {
 
-            const thumb =
-                lm[4].x < lm[3].x;
+            const palmSize =
+                distance(lm[0], lm[9]);
 
 
+            // الأصابع الأربعة
             const index =
-                isFingerUp(lm[8], lm[6]);
+                fingerExtended(
+                    lm[8],
+                    lm[6],
+                    lm[0],
+                    palmSize
+                );
 
 
             const middle =
-                isFingerUp(lm[12], lm[10]);
+                fingerExtended(
+                    lm[12],
+                    lm[10],
+                    lm[0],
+                    palmSize
+                );
 
 
             const ring =
-                isFingerUp(lm[16], lm[14]);
+                fingerExtended(
+                    lm[16],
+                    lm[14],
+                    lm[0],
+                    palmSize
+                );
 
 
             const pinky =
-                isFingerUp(lm[20], lm[18]);
+                fingerExtended(
+                    lm[20],
+                    lm[18],
+                    lm[0],
+                    palmSize
+                );
 
 
+            // الإبهام
+            const thumb =
+                thumbExtended(
+                    lm,
+                    palmSize
+                );
+
+
+            // =================================
+            // 🫰🏻 قلب بالأصابع
+            // لازم الإبهام والسبابة يكونون قريبين
+            // =================================
+
+            const pinch =
+                distance(lm[4], lm[8]) <
+                palmSize * 0.65;
+
+
+            if (
+                pinch &&
+                !middle &&
+                !ring &&
+                !pinky
+            ) {
+
+                return "HEART";
+
+            }
+
+
+            // =================================
             // 🖐🏼 فتح اليد
+            // =================================
+
             if (
                 index &&
                 middle &&
                 ring &&
-                pinky
+                pinky &&
+                thumb
             ) {
 
                 return "OPEN";
@@ -437,12 +518,16 @@
             }
 
 
+            // =================================
             // ✊🏼 قبضة
+            // =================================
+
             if (
                 !index &&
                 !middle &&
                 !ring &&
-                !pinky
+                !pinky &&
+                !thumb
             ) {
 
                 return "FIST";
@@ -450,12 +535,16 @@
             }
 
 
+            // =================================
             // ✌🏼 سلام
+            // =================================
+
             if (
                 index &&
                 middle &&
                 !ring &&
-                !pinky
+                !pinky &&
+                !thumb
             ) {
 
                 return "PEACE";
@@ -463,12 +552,16 @@
             }
 
 
+            // =================================
             // ☝🏻 إصبع واحد
+            // =================================
+
             if (
                 index &&
                 !middle &&
                 !ring &&
-                !pinky
+                !pinky &&
+                !thumb
             ) {
 
                 return "ONE";
@@ -476,7 +569,10 @@
             }
 
 
+            // =================================
             // 👍🏼 إبهام
+            // =================================
+
             if (
                 thumb &&
                 !index &&
@@ -490,20 +586,10 @@
             }
 
 
-            // 🫰🏻 قلب بالأصابع
-            if (
-                index &&
-                middle &&
-                !ring &&
-                pinky
-            ) {
-
-                return "HEART";
-
-            }
-
-
+            // =================================
             // 🤟🏼 أحبك
+            // =================================
+
             if (
                 thumb &&
                 index &&
@@ -517,12 +603,16 @@
             }
 
 
+            // =================================
             // 🤘🏼 روك
+            // =================================
+
             if (
                 index &&
                 !middle &&
                 !ring &&
-                pinky
+                pinky &&
+                !thumb
             ) {
 
                 return "ROCK";
@@ -530,7 +620,10 @@
             }
 
 
-            // 🤙🏼 اتصل
+            // =================================
+            // 🤙🏼 اتصال
+            // =================================
+
             if (
                 thumb &&
                 !index &&
@@ -544,12 +637,16 @@
             }
 
 
-            // 🫲🏻 اليد اليسرى
+            // =================================
+            // 🫲🏻
+            // =================================
+
             if (
                 !index &&
                 middle &&
                 ring &&
-                pinky
+                pinky &&
+                !thumb
             ) {
 
                 return "LEFT";
@@ -563,12 +660,92 @@
 
 
         // =====================================
-        // معرفة إذا الإصبع مرفوع
+        // هل الإصبع ممدود؟
         // =====================================
 
-        function isFingerUp(tip, pip) {
+        function fingerExtended(
+            tip,
+            pip,
+            wrist,
+            palmSize
+        ) {
 
-            return tip.y < pip.y;
+            const tipDistance =
+                distance(tip, wrist);
+
+            const pipDistance =
+                distance(pip, wrist);
+
+
+            return (
+                tipDistance >
+                pipDistance * 1.12
+            );
+
+        }
+
+
+        // =====================================
+        // الإبهام
+        // =====================================
+
+        function thumbExtended(
+            lm,
+            palmSize
+        ) {
+
+            const thumbTip =
+                lm[4];
+
+            const thumbIP =
+                lm[3];
+
+            const indexMCP =
+                lm[5];
+
+            const tipToIndex =
+                distance(
+                    thumbTip,
+                    indexMCP
+                );
+
+            const ipToIndex =
+                distance(
+                    thumbIP,
+                    indexMCP
+                );
+
+
+            return (
+                tipToIndex >
+                ipToIndex * 1.15
+            );
+
+        }
+
+
+        // =====================================
+        // المسافة بين نقطتين
+        // =====================================
+
+        function distance(a, b) {
+
+            const dx =
+                a.x - b.x;
+
+            const dy =
+                a.y - b.y;
+
+            const dz =
+                (a.z || 0) -
+                (b.z || 0);
+
+
+            return Math.sqrt(
+                dx * dx +
+                dy * dy +
+                dz * dz
+            );
 
         }
 
