@@ -44,7 +44,6 @@
             object-fit: contain;
             border-radius: 20px;
             margin: 20px auto;
-            display: block;
         }
 
         button {
@@ -75,17 +74,21 @@
 
     <video id="camera" autoplay playsinline></video>
 
-    <!-- الصورة -->
+    <!-- الصورة مخفية في البداية -->
     <img
         id="result"
-        src="https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg"
-        alt="الصورة"
+        src=""
+        alt=""
+        style="display: none;"
     >
 
     <script>
 
-        const video = document.getElementById("camera");
-        const resultImage = document.getElementById("result");
+        const video =
+            document.getElementById("camera");
+
+        const resultImage =
+            document.getElementById("result");
 
 
         // =====================================
@@ -155,12 +158,20 @@
         });
 
 
+        // =====================================
+        // نتائج الكاميرا
+        // =====================================
+
         hands.onResults(function(results) {
 
+
+            // إذا ما فيه يد
             if (
                 !results.multiHandLandmarks ||
                 results.multiHandLandmarks.length === 0
             ) {
+
+                resultImage.style.display = "none";
 
                 return;
 
@@ -175,63 +186,91 @@
                 recognizeGesture(hand);
 
 
+            // إذا ما تعرف على الحركة
+            if (!gesture) {
+
+                resultImage.style.display = "none";
+
+                return;
+
+            }
+
+
+            // إذا تعرف على الحركة
+            resultImage.style.display = "block";
+
+
+            // =================================
+            // تغيير الصورة
+            // =================================
+
             if (gesture === "OPEN") {
 
-                resultImage.src = images.OPEN;
+                resultImage.src =
+                    images.OPEN;
 
             }
 
             else if (gesture === "FIST") {
 
-                resultImage.src = images.FIST;
+                resultImage.src =
+                    images.FIST;
 
             }
 
             else if (gesture === "PEACE") {
 
-                resultImage.src = images.PEACE;
+                resultImage.src =
+                    images.PEACE;
 
             }
 
             else if (gesture === "THUMB") {
 
-                resultImage.src = images.THUMB;
+                resultImage.src =
+                    images.THUMB;
 
             }
 
             else if (gesture === "HEART") {
 
-                resultImage.src = images.HEART;
+                resultImage.src =
+                    images.HEART;
 
             }
 
             else if (gesture === "LEFT") {
 
-                resultImage.src = images.LEFT;
+                resultImage.src =
+                    images.LEFT;
 
             }
 
             else if (gesture === "LOVE") {
 
-                resultImage.src = images.LOVE;
+                resultImage.src =
+                    images.LOVE;
 
             }
 
             else if (gesture === "ROCK") {
 
-                resultImage.src = images.ROCK;
+                resultImage.src =
+                    images.ROCK;
 
             }
 
             else if (gesture === "CALL") {
 
-                resultImage.src = images.CALL;
+                resultImage.src =
+                    images.CALL;
 
             }
 
             else if (gesture === "ONE") {
 
-                resultImage.src = images.ONE;
+                resultImage.src =
+                    images.ONE;
 
             }
 
@@ -261,21 +300,22 @@
                 video.srcObject = stream;
 
 
-                const camera = new Camera(video, {
+                const camera =
+                    new Camera(video, {
 
-                    onFrame: async function() {
+                        onFrame: async function() {
 
-                        await hands.send({
-                            image: video
-                        });
+                            await hands.send({
+                                image: video
+                            });
 
-                    },
+                        },
 
-                    width: 640,
+                        width: 640,
 
-                    height: 480
+                        height: 480
 
-                });
+                    });
 
 
                 camera.start();
@@ -296,22 +336,27 @@
 
 
         // =====================================
-        // التعرف على الحركة
+        // التعرف على الحركات
         // =====================================
 
         function recognizeGesture(lm) {
 
+
             const thumb =
                 lm[4].x < lm[3].x;
+
 
             const index =
                 isFingerUp(lm[8], lm[6]);
 
+
             const middle =
                 isFingerUp(lm[12], lm[10]);
 
+
             const ring =
                 isFingerUp(lm[16], lm[14]);
+
 
             const pinky =
                 isFingerUp(lm[20], lm[18]);
