@@ -7,7 +7,6 @@
 
     <title>حركات اليد 🇸🇦</title>
 
-    <!-- MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
@@ -59,11 +58,6 @@
             border-radius: 15px;
             padding: 15px 25px;
             font-size: 20px;
-            cursor: pointer;
-        }
-
-        button:active {
-            transform: scale(0.95);
         }
     </style>
 </head>
@@ -84,7 +78,6 @@
         اضغطي تشغيل ثم سوي حركة بيدك 👋🏼
     </div>
 
-    <!-- الصورة الأولى -->
     <img
         id="result"
         src="https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg"
@@ -99,20 +92,46 @@
 
 
         // =====================================
-        // روابط الصور
+        // الصور
         // =====================================
 
         const images = {
-            OPEN: "https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg",
 
-            FIST: "https://raneem2fa-maker.github.io/Hand-gesture/fist.jpeg",
+            OPEN:
+                "https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg",
 
-            PEACE: "https://raneem2fa-maker.github.io/Hand-gesture/peace.jpeg"
+            FIST:
+                "https://raneem2fa-maker.github.io/Hand-gesture/fist.jpeg",
+
+            PEACE:
+                "https://raneem2fa-maker.github.io/Hand-gesture/peace.jpeg",
+
+            THUMB:
+                "https://raneem2fa-maker.github.io/Hand-gesture/thumb.jpeg",
+
+            HEART:
+                "https://raneem2fa-maker.github.io/Hand-gesture/finger-heart.jpeg",
+
+            LEFT:
+                "https://raneem2fa-maker.github.io/Hand-gesture/left-hand.jpeg",
+
+            LOVE:
+                "https://raneem2fa-maker.github.io/Hand-gesture/love.jpeg",
+
+            ROCK:
+                "https://raneem2fa-maker.github.io/Hand-gesture/rock.jpeg",
+
+            CALL:
+                "https://raneem2fa-maker.github.io/Hand-gesture/call.jpeg",
+
+            ONE:
+                "https://raneem2fa-maker.github.io/Hand-gesture/one.jpeg"
+
         };
 
 
         // =====================================
-        // MediaPipe Hands
+        // MediaPipe
         // =====================================
 
         const hands = new Hands({
@@ -150,7 +169,6 @@
                     "ما أشوف يد 👀";
 
                 return;
-
             }
 
 
@@ -162,50 +180,65 @@
                 recognizeGesture(hand);
 
 
-            // =================================
-            // 🖐🏼 كف مفتوح
-            // =================================
-
             if (gesture === "OPEN") {
 
-                gestureText.innerText =
-                    "🖐🏼 كف مفتوح";
-
-                resultImage.src =
-                    images.OPEN;
+                show("🖐🏼 كف مفتوح", images.OPEN);
 
             }
-
-
-            // =================================
-            // ✊🏼 قبضة
-            // =================================
 
             else if (gesture === "FIST") {
 
-                gestureText.innerText =
-                    "✊🏼 قبضة";
-
-                resultImage.src =
-                    images.FIST;
+                show("✊🏼 قبضة", images.FIST);
 
             }
-
-
-            // =================================
-            // ✌🏼 سلام
-            // =================================
 
             else if (gesture === "PEACE") {
 
-                gestureText.innerText =
-                    "✌🏼 سلام";
-
-                resultImage.src =
-                    images.PEACE;
+                show("✌🏼 سلام", images.PEACE);
 
             }
 
+            else if (gesture === "THUMB") {
+
+                show("👍🏼 إبهام", images.THUMB);
+
+            }
+
+            else if (gesture === "HEART") {
+
+                show("🫰🏻 قلب", images.HEART);
+
+            }
+
+            else if (gesture === "LEFT") {
+
+                show("🫲🏻 يد", images.LEFT);
+
+            }
+
+            else if (gesture === "LOVE") {
+
+                show("🤟🏼 أحبك", images.LOVE);
+
+            }
+
+            else if (gesture === "ROCK") {
+
+                show("🤘🏼 روك", images.ROCK);
+
+            }
+
+            else if (gesture === "CALL") {
+
+                show("🤙🏼 اتصال", images.CALL);
+
+            }
+
+            else if (gesture === "ONE") {
+
+                show("☝🏻 واحد", images.ONE);
+
+            }
 
             else {
 
@@ -215,6 +248,15 @@
             }
 
         });
+
+
+        function show(text, image) {
+
+            gestureText.innerText = text;
+
+            resultImage.src = image;
+
+        }
 
 
         // =====================================
@@ -265,19 +307,12 @@
 
             }
 
-
             catch (error) {
 
                 console.error(error);
 
-
                 gestureText.innerText =
                     "لم نستطع تشغيل الكاميرا ❌";
-
-
-                alert(
-                    "اسمحي للمتصفح باستخدام الكاميرا ثم حاولي مرة أخرى."
-                );
 
             }
 
@@ -285,29 +320,28 @@
 
 
         // =====================================
-        // معرفة حركة الأصابع
+        // التعرف على الحركة
         // =====================================
 
         function recognizeGesture(lm) {
 
+            const thumb =
+                lm[4].x < lm[3].x;
+
             const index =
                 isFingerUp(lm[8], lm[6]);
-
 
             const middle =
                 isFingerUp(lm[12], lm[10]);
 
-
             const ring =
                 isFingerUp(lm[16], lm[14]);
-
 
             const pinky =
                 isFingerUp(lm[20], lm[18]);
 
 
-            // 🖐🏼 كف مفتوح
-
+            // 🖐🏼
             if (
                 index &&
                 middle &&
@@ -320,8 +354,7 @@
             }
 
 
-            // ✊🏼 قبضة
-
+            // ✊🏼
             if (
                 !index &&
                 !middle &&
@@ -334,8 +367,7 @@
             }
 
 
-            // ✌🏼 سلام
-
+            // ✌🏼
             if (
                 index &&
                 middle &&
@@ -348,14 +380,104 @@
             }
 
 
+            // ☝🏻
+            if (
+                index &&
+                !middle &&
+                !ring &&
+                !pinky
+            ) {
+
+                return "ONE";
+
+            }
+
+
+            // 👍🏼
+            if (
+                thumb &&
+                !index &&
+                !middle &&
+                !ring &&
+                !pinky
+            ) {
+
+                return "THUMB";
+
+            }
+
+
+            // 🫰🏻
+            if (
+                index &&
+                middle &&
+                !ring &&
+                pinky
+            ) {
+
+                return "HEART";
+
+            }
+
+
+            // 🤟🏼
+            if (
+                thumb &&
+                index &&
+                !middle &&
+                !ring &&
+                pinky
+            ) {
+
+                return "LOVE";
+
+            }
+
+
+            // 🤘🏼
+            if (
+                index &&
+                !middle &&
+                !ring &&
+                pinky
+            ) {
+
+                return "ROCK";
+
+            }
+
+
+            // 🤙🏼
+            if (
+                thumb &&
+                !index &&
+                !middle &&
+                !ring &&
+                pinky
+            ) {
+
+                return "CALL";
+
+            }
+
+
+            // 🫲🏻
+            if (
+                !index &&
+                middle &&
+                ring &&
+                pinky
+            ) {
+
+                return "LEFT";
+
+            }
+
+
             return null;
 
         }
 
-
-        // =====================================
-        // هل الإصبع مرفوع؟
-        // =====================================
 
         function isFingerUp(tip, pip) {
 
