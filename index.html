@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>حركات اليد</title>
+    <title>حركات اليد 🇸🇦</title>
 
     <!-- MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
@@ -70,7 +70,7 @@
 
 <body>
 
-    <h1>🖐🏼 حركات اليد</h1>
+    <h1>🇸🇦 حركات اليد</h1>
 
     <button onclick="startCamera()">
         تشغيل الكاميرا 📷
@@ -84,8 +84,12 @@
         اضغطي تشغيل ثم سوي حركة بيدك 👋🏼
     </div>
 
-    <!-- الصورة التي ستتغير -->
-    <img id="result" src="open.jpg" alt="الصورة">
+    <!-- الصورة الأولى -->
+    <img
+        id="result"
+        src="https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg"
+        alt="الصورة"
+    >
 
     <script>
 
@@ -93,14 +97,17 @@
         const resultImage = document.getElementById("result");
         const gestureText = document.getElementById("gesture");
 
+
         // =====================================
-        // الصور
+        // روابط الصور
         // =====================================
 
         const images = {
-            OPEN: "open.jpg",
-            FIST: "fist.jpg",
-            PEACE: "peace.jpg"
+            OPEN: "https://raneem2fa-maker.github.io/Hand-gesture/open.jpeg",
+
+            FIST: "https://raneem2fa-maker.github.io/Hand-gesture/fist.jpeg",
+
+            PEACE: "https://raneem2fa-maker.github.io/Hand-gesture/peace.jpeg"
         };
 
 
@@ -109,16 +116,26 @@
         // =====================================
 
         const hands = new Hands({
+
             locateFile: function(file) {
+
                 return "https://cdn.jsdelivr.net/npm/@mediapipe/hands/" + file;
+
             }
+
         });
 
+
         hands.setOptions({
+
             maxNumHands: 1,
+
             modelComplexity: 1,
+
             minDetectionConfidence: 0.7,
+
             minTrackingConfidence: 0.7
+
         });
 
 
@@ -128,12 +145,18 @@
                 !results.multiHandLandmarks ||
                 results.multiHandLandmarks.length === 0
             ) {
-                gestureText.innerText = "ما أشوف يد 👀";
+
+                gestureText.innerText =
+                    "ما أشوف يد 👀";
+
                 return;
+
             }
+
 
             const hand =
                 results.multiHandLandmarks[0];
+
 
             const gesture =
                 recognizeGesture(hand);
@@ -150,6 +173,7 @@
 
                 resultImage.src =
                     images.OPEN;
+
             }
 
 
@@ -164,6 +188,7 @@
 
                 resultImage.src =
                     images.FIST;
+
             }
 
 
@@ -178,6 +203,7 @@
 
                 resultImage.src =
                     images.PEACE;
+
             }
 
 
@@ -185,6 +211,7 @@
 
                 gestureText.innerText =
                     "حركة غير معروفة 🤔";
+
             }
 
         });
@@ -200,11 +227,15 @@
 
                 const stream =
                     await navigator.mediaDevices.getUserMedia({
+
                         video: {
                             facingMode: "user"
                         },
+
                         audio: false
+
                     });
+
 
                 video.srcObject = stream;
 
@@ -220,9 +251,11 @@
                     },
 
                     width: 640,
+
                     height: 480
 
                 });
+
 
                 camera.start();
 
@@ -232,17 +265,22 @@
 
             }
 
+
             catch (error) {
 
                 console.error(error);
 
+
                 gestureText.innerText =
                     "لم نستطع تشغيل الكاميرا ❌";
+
 
                 alert(
                     "اسمحي للمتصفح باستخدام الكاميرا ثم حاولي مرة أخرى."
                 );
+
             }
+
         }
 
 
@@ -255,17 +293,21 @@
             const index =
                 isFingerUp(lm[8], lm[6]);
 
+
             const middle =
                 isFingerUp(lm[12], lm[10]);
 
+
             const ring =
                 isFingerUp(lm[16], lm[14]);
+
 
             const pinky =
                 isFingerUp(lm[20], lm[18]);
 
 
-            // 🖐🏼
+            // 🖐🏼 كف مفتوح
+
             if (
                 index &&
                 middle &&
@@ -274,10 +316,12 @@
             ) {
 
                 return "OPEN";
+
             }
 
 
-            // ✊🏼
+            // ✊🏼 قبضة
+
             if (
                 !index &&
                 !middle &&
@@ -286,10 +330,12 @@
             ) {
 
                 return "FIST";
+
             }
 
 
-            // ✌🏼
+            // ✌🏼 سلام
+
             if (
                 index &&
                 middle &&
@@ -298,10 +344,12 @@
             ) {
 
                 return "PEACE";
+
             }
 
 
             return null;
+
         }
 
 
@@ -312,6 +360,7 @@
         function isFingerUp(tip, pip) {
 
             return tip.y < pip.y;
+
         }
 
     </script>
